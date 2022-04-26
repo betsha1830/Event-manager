@@ -14,8 +14,8 @@ puts 'Event Manager Initialized!'
 #   p columns
 # end
 
-contents = CSV.open('event_attendees.csv', headers: true)
+contents = CSV.open('event_attendees.csv', headers: true, header_converters: :symbol)
 contents.each do |item|
-  name = item[2]
+  name = item[:first_name]
   puts name
 end
