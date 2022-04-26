@@ -15,20 +15,7 @@ puts 'Event Manager Initialized!'
 # end
 
 def zipcode_handler (zipcode)
-  index = 0
-  if zipcode.nil?
-    zipcode = '00000'
-  elsif zipcode.length < 5
-    index = zipcode.length
-    while index < 5
-      zipcode = "0#{zipcode}"
-      index += 1
-    end
-    zipcode
-  elsif zipcode.length > 5
-    zipcode = zipcode.slice(0, 5)
-  else zipcode
-  end
+  zipcode.to_s.rjust(5, '0')[0..4]
 end
 
 contents = CSV.open('event_attendees.csv', headers: true, header_converters: :symbol)
