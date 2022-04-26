@@ -1,33 +1,43 @@
 require 'csv'
-puts 'Event Manager Initialized!'
+require 'google/apis/civicinfo_v2'
 
-# if File.exist?('event_attendees.csv')
-#   contents = File.read('event_attendees.csv') 
-#   puts contents
-# else puts "file event_attendees.csv doesn't exist."
-# end
 
-# lines = File.readlines('event_attendees.csv')
-# lines.each_with_index do |line, index|
-#   next if index == 0
-#   columns = line.split(",")
-#   p columns
-# end
-
-def zipcode_handler (zipcode)
+def clean_zipcode(zipcode)
   zipcode.to_s.rjust(5, '0')[0..4]
 end
 
-contents = CSV.open('event_attendees.csv', headers: true, header_converters: :symbol)
-contents.each do |item|
+def legislators_by_zipcode(zip)
+  civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
+  civic_info.key = 'AIzaSyClRzDqDh5MsXwnCWi0kOiiBivP6JsSyBw'
 
-  name = item[:first_name]
-  zipcode = item[:zipcode]
+  begin
+    legislators = civic_info.representative_info_by_address(
+      address: zip,
+      levels: 'country',
+      roles: ['legislatorUpperBody', 'legislatorLowerBody']
+    )
+    legislators = legislators.officials
+    legislator_names = legislators.map(&:name)
+    legislator_names.join(", ")
+  rescue
+    'You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
+  end
+end
 
-  # If the zip code is less than five digits, add zeros to the front until it becomes five digits
-  # If a zipcode is more than 5 digits chop the the first 5 digits to store
+puts 'EventManager initialized.'
 
-  zipcode = zipcode_handler(item[:zipcode])
+contents = CSV.open(
+  'event_attendees.csv',
+  headers: true,
+  header_converters: :symbol
+)
 
-  puts "#{name}, #{zipcode}"
+contents.each do |row|
+  name = row[:first_name]
+
+  zipcode = clean_zipcode(row[:zipcode])
+
+  legislators = legislators_by_zipcode(zipcode)
+
+  puts "#{name} #{zipcode} #{legislators}"
 end
