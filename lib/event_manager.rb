@@ -14,14 +14,7 @@ puts 'Event Manager Initialized!'
 #   p columns
 # end
 
-contents = CSV.open('event_attendees.csv', headers: true, header_converters: :symbol)
-contents.each do |item|
-
-  name = item[:first_name]
-  zipcode = item[:zipcode]
-
-  # If the zip code is less than five digits, add zeros to the front until it becomes five digits
-  # If a zipcode is more than 5 digits chop the the first 5 digits to store
+def zipcode_handler (zipcode)
   index = 0
   if zipcode.nil?
     zipcode = '00000'
@@ -30,10 +23,24 @@ contents.each do |item|
     while index < 5
       zipcode = "0#{zipcode}"
       index += 1
-    end 
+    end
+    zipcode
   elsif zipcode.length > 5
     zipcode = zipcode.slice(0, 5)
+  else zipcode
   end
+end
+
+contents = CSV.open('event_attendees.csv', headers: true, header_converters: :symbol)
+contents.each do |item|
+
+  name = item[:first_name]
+  zipcode = item[:zipcode]
+
+  # If the zip code is less than five digits, add zeros to the front until it becomes five digits
+  # If a zipcode is more than 5 digits chop the the first 5 digits to store
+
+  zipcode = zipcode_handler(item[:zipcode])
 
   puts "#{name}, #{zipcode}"
 end
