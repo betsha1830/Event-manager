@@ -1,4 +1,5 @@
 require 'csv'
+require 'google/apis/civicinfo_v2'
 
 contents = CSV.open('event_attendees.csv', headers: true, header_converters: :symbol)
 
@@ -8,12 +9,29 @@ def clean_zipcode(zipcode)
 
 end
 
+def legislators_by_zipcode(zip)
+  civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
+  civic_info.key = 'AIzaSyClRzDqDh5MsXwnCWi0kOiiBivP6JsSyBw'
+
+  begin
+    legislators = civic_info.representative_info_by_address(
+      address: zip,
+      levels: 'country',
+      roles: ['legislatorUpperBody', 'legislatorLowerBody']
+    )
+    legislators = legislators.officials
+    legislator_names = legislators.map(&:name)
+    legislator_names.join(", ")
+  rescue
+    'You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
+  end
+end
+
 contents.each do |row|
   name = row[:first_name]
-  zipcode = row[:zipcode]
+  zipcode = clean_zipcode(row[:zipcode])
+  legislators = legislators_by_zipcode(zipcode)
 
-  #if zipcode is five digits then it's a correct zipcode
-  #if zipcode is more than five digits chop to the first 5 digits
-  #if zipcode is less than five digits fill in with zeros from the beginning
-  puts "#{name} #{clean_zipcode(zipcode)}"
+  puts "#{name} #{zipcode} #{legislators}"
+
 end
