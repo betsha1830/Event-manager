@@ -11,20 +11,27 @@ end
 
 def clean_phone_number(phone_number)
 
-  #If the phone number is less than 10 digits, assume that it is a bad number
+  #If the phone number is less than 10 digits, assume that it is a bad number -
   #If the phone number is 10 digits, assume that it is good
   #If the phone number is 11 digits and the first number is 1, trim the 1 and use the remaining 10 digits
-  #If the phone number is 11 digits and the first number is not 1, then it is a bad number
-  #If the phone number is more than 11 digits, assume that it is a bad number
+  #If the phone number is 11 digits and the first number is not 1, then it is a bad number 
+  #If the phone number is more than 11 digits, assume that it is a bad number -
   #Remove any spaces or signs from number
 
-  if phone_number.length < 10 || phone_number.length > 11 || (phone_number.length == 1 && phone_number[0] != '1')
-    ""
-  elsif (phone_number.length == 1 && phone_number[0] == '1') || phone_number.length == 10
-    phone_number
+  while phone_number =~ /\D/
+    index = phone_number =~ /\D/
+    phone_number[index] = ''
   end
+  
+  phone_number = phone_number.to_s
 
-  phone_number.to_s.rjust()
+  if phone_number.length < 10 || phone_number.length > 11 || (phone_number.length == 11 && phone_number[0] != '1')
+    ""
+  elsif phone_number.length == 10
+    phone_number
+  else
+    phone_number = phone_number[1..10]
+  end
 
 end
 
@@ -57,10 +64,10 @@ erb_template = ERB.new template_letter
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
-  phone_number = row[:HomePhone]
+  puts phone_number = clean_phone_number(row[:homephone])
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
   form_letter = erb_template.result(binding)
-  save_thank_you_letter(id,form_letter)
+  # save_thank_you_letter(id,form_letter)
 
 end
