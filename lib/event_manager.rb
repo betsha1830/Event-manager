@@ -1,6 +1,7 @@
 require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
+require 'time'
 
 template_letter = File.read('form_letter.html')
 contents = CSV.open('event_attendees.csv', headers: true, header_converters: :symbol)
@@ -58,13 +59,26 @@ def save_thank_you_letter(id,form_letter)
   end
 end
 
+def reg_time_counter(reg_date)
+  user_reg_at_hours = {}
+
+  date = Time.parse(reg_date)
+  hour = date.strftime('%k').strip
+  user_reg_at_hours.include?(hour) ? user_reg_at_hours[hour] += 1 : user_reg_at_hours[hour] = 1
+  user_reg_at_hours
+end
+
+def time_filter(start_hour,end_hour) 
+  
+end
+
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
-  puts phone_number = clean_phone_number(row[:homephone])
+  phone_number = clean_phone_number(row[:homephone])
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
   form_letter = erb_template.result(binding)
